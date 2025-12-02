@@ -1,0 +1,84 @@
+<?php
+// fetch_user_details.php
+
+// Check if username and password are provided via POST
+if (isset($_POST['username']) && isset($_POST['password'])) {
+    // Sanitize and collect username and password
+    $username = $_POST['username'];
+    $password = $_POST['password']; // You might want to hash this for security
+
+    // Database connection
+    $conn = mysqli_connect("localhost", "root", "Dhanuja", "payment");
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    // Prepare SQL statement to fetch user details
+    $fetch_user_query = "SELECT * FROM login_credential WHERE username = ? AND password = ?";
+    $stmt = $conn->prepare($fetch_user_query);
+    $stmt->bind_param("ss", $username, $password); // Assuming password is stored securely
+
+    // Execute SQL statement
+    if ($stmt->execute()) {
+        $result = $stmt->get_result();
+
+        // Check if user exists
+        if ($result->num_rows > 0) {
+            // Fetch user details from registration table
+            $fetch_user_details_query = "SELECT * FROM registration WHERE username = ?";
+            $stmt_user_details = $conn->prepare($fetch_user_details_query);
+            $stmt_user_details->bind_param("s", $username);
+            $stmt_user_details->execute();
+            $user_result = $stmt_user_details->get_result();
+
+            // Check if user details are fetched
+            if ($user_result->num_rows > 0) {
+                $user = $user_result->fetch_assoc();
+
+                // Prepare user details as JSON response
+                $response = array(
+                    'success' => true,
+                    'username' => $user['username'],
+                    'name' => $user['name'],
+                    'age' => $user['age'],
+                    'city' => $user['city'],
+                    'address' => $user['address'],
+                    'dob' => $user['dob'],
+                    'pincode' => $user['pincode'],
+                    'country' => $user['country'],
+                    'bank_name' => $user['bank_name'],
+                    'account_number' => $user['account_number'],
+                    'card_number' => $user['card_number'],
+                    'cvv' => $user['cvv'],
+                    'expiry_date' => $user['expiry_date'],
+                    'upi_id' => $user['upi_id'],
+                    'upi_phone' => $user['upi_phone'],
+                    'cif' => $user['cif'],
+                    'ifsc' => $user['ifsc'],
+                    'net_banking_pin' => $user['net_banking_pin'],
+                    'amount' => $user['amount']
+                );
+
+                // Return user details as JSON
+                header('Content-Type: application/json');
+                echo json_encode($response);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'User details not found']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid username or password']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to execute query']);
+    }
+
+    // Close statements and connection
+    $stmt->close();
+    $stmt_user_details->close();
+    $conn->close();
+} else {
+    echo json_encode(['success' => false, 'message' => 'Username or password not provided']);
+}
+?>

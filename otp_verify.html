@@ -1,0 +1,84 @@
+<?php
+session_start();
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $enteredOtp = $_POST['otp'];
+    $sessionOtp = $_SESSION['otp'];
+
+    $cardHolder = $_POST['card-holder'];
+    $cardNumber = $_POST['card-number'];
+    $expiryDate = $_POST['expiry-date'];
+    $cvv = $_POST['cvv'];
+    $amt = $_POST['amt']; // Amount to be deducted
+
+    // Connect to the database
+    $con = mysqli_connect("localhost", "root", "Dhanuja", "payment");
+
+    // Check connection
+    if (!$con) {
+        die("Connection failed: " . mysqli_connect_error());
+    }
+
+    // Verify OTP
+    if ($enteredOtp == $sessionOtp) {
+        // OTP is correct, update the balance
+        $updateSql = "UPDATE credit SET balance = balance - '$amt' WHERE card_holder = '$cardHolder' AND card_number = '$cardNumber' AND expiry_date = '$expiryDate' AND cvv = '$cvv'";
+
+        if (mysqli_query($con, $updateSql)) {
+            // Balance updated successfully, handle payment success
+            echo '
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Payment Success</title>
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: "success",
+                        title: "Payment Successful",
+                        text: "Your payment has been processed successfully."
+                    }).then(function() {
+                        window.location = "payment.html"; // Redirect to success page
+                    });
+                </script>
+            </body>
+            </html>
+            ';
+        } else {
+            // Error updating balance
+            echo "Error updating balance: " . mysqli_error($con);
+        }
+    } else {
+        // OTP is incorrect, handle failure
+        echo '
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Payment Failed</title>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: "error",
+                    title: "Payment Failed",
+                    text: "Invalid OTP. Please try again."
+                }).then(function() {
+                    window.location = "payment.html"; // Redirect to retry page
+                });
+            </script>
+        </body>
+        </html>
+        ';
+    }
+
+    // Close the database connection
+    mysqli_close($con);
+}
+?>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="paymentstyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 225px;
+            height: 100%;
+            background-color: #0f5a90;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #000;
+            text-decoration: none;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .sidebar a.active {
+            background-color: #042944;
+            color: #fff;
+        }
+
+
+        .profile {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background-color:#042944;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 420px;
+        }
+        .home {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background-color:#042944;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .profile:hover {
+            background-color:#042944 ;
+        }
+
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+
+        .person-details {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="header">SELECT PAYMENT MODE</div>
+        <a href="#" class="default active" onclick="loadContent('credit', event)">Credit Card</a>
+        <a href="#" onclick="loadContent('netbanking', event)">Net Banking</a>
+        <a href="#" onclick="loadContent('upi', event)">UPI</a>
+        
+        <!-- Button for displaying person details -->
+        <button class="profile" onclick="loadUserDetails()">PROFILE</button>
+<button class="home" onclick="window.location.href='main.html'">HOME</button>
+        
+        <!-- Container for displaying person details -->
+        <div class="person-details" id="personDetails"></div>
+    </div>
+
+    <div class="content" id="content">
+        <!-- Content will be dynamically loaded here based on selection -->
+    </div>
+
+    <script>
+        function loadContent(type, event) {
+            event.preventDefault();
+
+            document.querySelectorAll('.sidebar a').forEach(function(el) {
+                el.classList.remove('active');
+            });
+
+            event.target.classList.add('active');
+
+            const content = {
+                credit: `
+                    <div class="top">
+                        <h2>Credit  Card</h2>
+                    </div>
+                    <div class="bottom">
+                        <div class="netcontainer">
+                            <div class="payment">
+                                <form class="form" id="creditForm" action="submit_payment.php" method="post">
+                                    <div class="input-container">
+                                        <label class="label">Card holder</label>
+                                        <input type="text" class="input" name="card-holder" placeholder="Card holder name" required>
+                
+                                        <label class="label">Card number</label>
+                                        <input type="text" class="input" name="card-number" data-mask="0000 0000 0000 0000" placeholder="Card Number" required>
+                
+                                        <label class="label">Expiry date</label>
+                                        <input type="text" name="expiry-date" class="input" data-mask="00 / 00" placeholder="00 / 00" required>
+                
+                                        <label class="label">CVV</label>
+                                        <input type="text" name="cvv" class="input" data-mask="000" placeholder="000" required>
+                
+                                        <label class="label">Amount</label>
+                                        <input type="number" name="amt" class="input" min=0 required>
+                                    </div>
+
+                                    <div class="buttons">
+                                        <button class="ok" type="submit">PROCEED</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                netbanking: `
+                    <div class="top">
+                        <h2>Net Banking</h2>
+                    </div>
+                    <div class="bottom">
+                        <div class="netcontainer">
+                            <form id="netbankingForm" method="post" action="net_check.php">
+                                <div class="input-container">
+                                    <label for="accountHolder">Account Holder's Number</label>
+                                    <input type="text" id="accountHolder" name="accountHolder" maxlength="11" required placeholder="Enter 11-digit account number">
+
+                                    <label for="receiverAccount">Receiver's Account Number</label>
+                                    <input type="text" id="receiverAccount" name="receiverAccount" maxlength="11" pattern="\\d{11}" required placeholder="Enter 11-digit account number">
+                                    
+                                    <label for="ifscCode">IFSC Code</label>
+                                    <input type="text" id="ifscCode" name="ifscCode" maxlength="11" required placeholder="Enter 11-character IFSC code">
+
+                                    <label for="amount">Amount (Up to 1 lakh)</label>
+                                    <input type="number" id="amount" name="amount" min="0" max="100000" required placeholder="Enter amount (max 1 lakh)" oninput="calculateCommission()">
+
+                                    <div class="buttons">
+                                        <button class="ok" type="submit">PROCEED</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `,
+                qrcode: `
+                    <div class="top">
+                        <h2>QR Code</h2>
+                    </div>
+                    <div class="bottom">
+                        <div class="container">
+                            <p>Details about QR Code payment mode.</p>
+                        </div>
+                    </div>
+                `,
+                upi: `
+                    <div class="top">
+                        <h2>UPI</h2>
+                    </div>
+                    <div class="bottom">
+                        <div class="netcontainer">
+                            <form id="upiForm" method="post" action="upi_check.php">
+                                <div class="input-container">
+                                    <label for="send_upi">Sender UPI Id</label>
+                                    <input type="text" id="send_upi" name="send_upi" placeholder="sender@bank" required><br><br>
+                                    
+                                    <label for="rev_upi">Receiver UPI Id</label>
+                                    <input type="text" id="rev_upi" name="rev_upi" placeholder="receiver@bank" required><br><br>
+                                    
+                                    <label for="amt">Amount</label>
+                                    <input type="number" id="amt" name="amt" min=0 required><br><br>
+                                    
+                                    <div class="buttons">
+                                        <button class="ok" type="submit">PROCEED</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `,
+                neft: `
+                    <div class="top">
+                        <h2>NEFT</h2>
+                    </div>
+                    <div class="bottom">
+                        <div class="container">
+                            <p>Details about NEFT payment mode.</p>
+                        </div>
+                    </div>
+                `,
+                wallet: `
+                    <div class="top">
+                        <h2>Wallet</h2>
+                    </div>
+                    <div class="bottom">
+                        <div class="container">
+                            <p>Details about Wallet payment mode.</p>
+                        </div>
+                    </div>
+                `
+            };
+
+            document.getElementById('content').innerHTML = content[type];
+
+            // Attach event listener for UPI form after loading content
+            if (type === 'upi') {
+                document.getElementById('upiForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+
+                    let formData = new FormData(this);
+
+                    fetch('upi_check.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log(data); // Debugging: log the response data
+                        // Update only the relevant part of .bottom
+                        document.querySelector('.bottom .netcontainer').innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Handle error here if needed
+                    });
+                });
+            }
+
+            // Attach event listener for Credit form after loading content
+            if (type === 'credit') {
+                document.getElementById('creditForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+
+                    let formData = new FormData(this);
+
+                    fetch('submit_payment.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log(data); // Debugging: log the response data
+                        // Update only the relevant part of .bottom
+                        document.querySelector('.bottom .netcontainer').innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Handle error here if needed
+                    });
+                });
+            }
+
+            // Attach event listener for Net Banking form after loading content
+            if (type === 'netbanking') {
+                document.getElementById('netbankingForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+
+                    let formData = new FormData(this);
+
+                    fetch('net_check.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log(data); // Debugging: log the response data
+                        // Update only the relevant part of .bottom
+                        document.querySelector('.bottom .netcontainer').innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Handle error here if needed
+                    });
+                });
+            }
+        }
+
+        // Load user details
+        function loadUserDetails() {
+            window.location.href = "user_details.php";
+        }
+
+        // Initial load of the content
+        document.addEventListener("DOMContentLoaded", function() {
+            loadContent('credit', { target: document.querySelector('.sidebar a.default'), preventDefault: () => {} });
+        });
+    </script>
+</body>
+</html>

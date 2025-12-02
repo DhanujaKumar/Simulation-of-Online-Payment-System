@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction</title>
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #043C64;
+    position: relative;
+}
+
+.container{
+    width: 500px;
+    height:400px;
+    background-color: #fff;
+    box-shadow: 0 0px 10px rgba(61, 58, 58, 0.1);
+    align-items: center;
+    justify-content: center;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size:20px;
+    display:flex;
+    flex-direction: column;
+    gap:25px;
+}
+.button {
+    padding: 20px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.button:hover {
+    background-color: #63a3e7;
+}
+.login-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.login-button:hover {
+    background-color: #218838;
+}
+</style>
+</head>
+<body>
+    <button class="login-button" onclick="navigateToLogin()">LOGIN</button>
+    <div class="container">
+        <b>CHOOSE TRANSACTION MODE</b>
+        <button class="button" onclick="transfer()">TRANSFER</button>
+        <button class="button" onclick="payment()">PAYMENT</button>
+    </div>
+<script>
+    const upiId = 'your-upi-id-here';
+
+    function transfer() {
+        const nextPage = `transfer.php?upi=${encodeURIComponent(upiId)}`;
+        window.location.href = nextPage;
+    }
+
+    function payment() {
+        const nextPage = `payment.html?upi=${encodeURIComponent(upiId)}`;
+        window.location.href = nextPage;
+    }
+
+    function navigateToLogin() {
+        window.location.href = 'user_login.php';
+    }
+</script>
+</body>
+</html>
